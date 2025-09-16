@@ -149,11 +149,11 @@ def guardar_artifactos(base_name: str, golpes, t, x, y, z, w: int, gen_png: bool
 def main():
     ap = argparse.ArgumentParser(description="Procesado offline de sesión (ventanas en MUESTRAS).")
     ap.add_argument("csv", help="Ruta al CSV de sesión (Tiempo;X;Y;Z)")
-    ap.add_argument("--umbral", type=float, default=15.0, help="Umbral fijo sobre magnitud suavizada (m/s^2)")
+    ap.add_argument("--umbral", type=float, default=17.0, help="Umbral fijo sobre magnitud suavizada (m/s^2)")
     ap.add_argument("--w",      type=int,   default=5,    help="Ventana SMA (muestras)")
     ap.add_argument("--pre",    type=int,   default=30,   help="Muestras PRE al pico (por defecto 30)")
     ap.add_argument("--post",   type=int,   default=30,   help="Muestras POST al pico (por defecto 30)")
-    ap.add_argument("--refract", type=int,  default=60,   help="Refractario entre golpes (muestras) ⇒ ~1.2 s a 50 Hz")
+    ap.add_argument("--refract", type=int,  default=125,   help="Refractario entre golpes (muestras) ⇒ ~2.5 s a 50 Hz")
     ap.add_argument("--peak-lookahead", type=int, default=15, help="Búsqueda de pico hacia delante (muestras) ⇒ ~0.3 s a 50 Hz")
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--png",    dest="gen_png", action="store_true",  help="(Compat.) Forzar generación de PNG (por defecto ya está activado)")
