@@ -1,0 +1,40 @@
+# /etc/systemd/system/padel-bridge.service
+[Unit]
+Description=Padel Bridge (ESP32 SPP -> Flask batch) usando bridge_bt.py
+Wants=bluetooth.service network-online.target
+After=bluetooth.service network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi
+# IMPORTANTE: que los ExecStartPre se ejecuten como root y tu script como 'pi'
+PermissionsStartOnly=true
+
+# Variables en línea (sin /etc/default)
+Environment=PYTHONUNBUFFERED=1
+Environment=SERVER_URL=http://192.168.0.33:5000/add_batch
+Environment=ESP32_MAC=C0:49:EF:08:D6:FE
+Environment=RFCOMM_DEV=0
+Environment=BAUD=115200
+Environment=BATCH_N=25
+Environment=BATCH_MS=250
+Environment=MAX_BACKLOG=1000
+
+# Prepara /dev/rfcommX
+ExecStartPre=/usr/bin/rfcomm release ${RFCOMM_DEV}
+ExecStartPre=/usr/bin/rfcomm bind ${RFCOMM_DEV} ${ESP32_MAC} 1
+
+# Arranca tu script (ya renombrado a bridge_bt.py con lógica por lotes)
+ExecStart=/usr/bin/python3 /home/pi/bridge_bt.py
+
+Restart=always
+RestartSec=1
+StandardOutput=journal
+StandardError=journal
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
+

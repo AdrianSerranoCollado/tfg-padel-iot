@@ -1,0 +1,43 @@
+# /etc/systemd/system/padel-logger.service
+[Unit]
+Description=Registrador de sesiones ESP32 -> CSV local (logger_bt.py)
+Wants=bluetooth.service
+After=bluetooth.service
+# Evita colisión con el bridge (ambos pelean por /dev/rfcomm0)
+Conflicts=padel-bridge.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi
+# Los ExecStartPre van como root; tu script corre como 'pi'
+PermissionsStartOnly=true
+
+# === Variables (ajusta la MAC y rutas si cambia algo) ===
+Environment=PYTHONUNBUFFERED=1
+Environment=ESP32_MAC=C0:49:EF:08:D6:FE
+Environment=RFCOMM_DEV=0
+Environment=BAUD=115200
+Environment=LOG_DIR=/home/pi/padel-logs
+
+# === Preparativos: carpeta de logs y /dev/rfcomm0 ===
+ExecStartPre=/usr/bin/mkdir -p ${LOG_DIR}
+ExecStartPre=/usr/bin/rfcomm release ${RFCOMM_DEV}
+ExecStartPre=/usr/bin/rfcomm bind ${RFCOMM_DEV} ${ESP32_MAC} 1
+
+# === Lanza tu script registrador ===
+# (Asegúrate de que el nombre del script coincide: logger_bt.py vs logger-gt.py)
+ExecStart=/usr/bin/python3 /home/pi/logger_bt.py
+
+# === Limpieza al parar: liberar el dispositivo RFCOMM ===
+ExecStopPost=/usr/bin/rfcomm release ${RFCOMM_DEV}
+
+Restart=always
+RestartSec=2
+StandardOutput=journal
+StandardError=journal
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
