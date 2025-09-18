@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visualización Pala Pádel</title>
+    <script src="/static/chart.js"></script>
+</head>
+<body>
+    <h2>Datos del Acelerómetro</h2>
+    <a href="/exportar" download>
+        <button style="margin-bottom: 20px;">📥 Descargar CSV</button>
+    </a>
+
+    <canvas id="grafica" width="800" height="400"></canvas>
+
+    <script>
+    const ctx = document.getElementById('grafica').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                { label: 'X', data: [], borderColor: 'red' },
+                { label: 'Y', data: [], borderColor: 'green' },
+                { label: 'Z', data: [], borderColor: 'blue' }
+            ]
+        },
+        options: {
+            animation: false,
+            scales: {
+                x: { title: { display: true, text: 'Tiempo (ms)' } },
+                y: { title: { display: true, text: 'Aceleración (m/s²)' } }
+            }
+        }
+    });
+
+    async function actualizarDatos() {
+        const response = await fetch('/data');
+        const datos = await response.json();
+
+        chart.data.labels = datos.map(d => d[0]);
+        chart.data.datasets[0].data = datos.map(d => d[1]);
+        chart.data.datasets[1].data = datos.map(d => d[2]);
+        chart.data.datasets[2].data = datos.map(d => d[3]);
+        chart.update();
+    }
+
+    setInterval(actualizarDatos, 500);
+    </script>
+</body>
+</html>
